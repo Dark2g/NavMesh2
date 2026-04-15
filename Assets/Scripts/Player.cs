@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,18 +5,27 @@ using UnityEngine.AI;
 
 public class Player : MonoBehaviour
 {
-    public Camera cam;
+    private const float MoveSpeed = 5f;
+
     public NavMeshAgent agent;
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
 
-            if (Physics.Raycast(ray, out hit))
-                agent.SetDestination(hit.point);
+        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if (direction.magnitude > 0.1f)
+        {
+            Vector3 targetPosition = transform.position + direction;
+            agent.SetDestination(targetPosition);
+            agent.speed = MoveSpeed;
+        }
+        else
+        {
+            // Detiene el agente cuando no hay input
+            agent.SetDestination(transform.position);
         }
     }
 }

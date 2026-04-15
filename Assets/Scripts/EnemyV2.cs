@@ -32,33 +32,35 @@ public class EnemyV2 : MonoBehaviour
     {
         if (Vector3.Distance(transform.position, destination) < 2.5f)
         {
-            if (randomRoute == true)
+            // Punto aleatorio en el NavMesh (ambos flags activos): debe comprobarse primero
+            if (randomPoint && randomRoute)
+            {
+                Vector3 newPoint = Random.insideUnitSphere * 50; // Radio de búsqueda
+                NavMeshHit hit;
+                NavMesh.SamplePosition(newPoint, out hit, 50, NavMesh.AllAreas);
+                destination = hit.position;
+            }
+
+            // Ruta aleatoria: salta a un punto aleatorio de la lista de waypoints
+            else if (randomRoute)
             {
                 index = Random.Range(0, _route.childCount);
                 destination = _route.GetChild(index).position;
             }
 
-            else if (randomPoint == true)
+            // Ruta delimitada: punto aleatorio dentro de los límites minPoint/maxPoint
+            else if (randomPoint)
             {
-                destination = new Vector3(Random.Range(minPoint.x, maxPoint.x), 0, Random.Range(minPoint.z, maxPoint.z));
+                destination = new Vector3(
+                    Random.Range(minPoint.x, maxPoint.x),
+                    0,
+                    Random.Range(minPoint.z, maxPoint.z));
             }
 
-            else if (randomPoint && randomRoute)
-            {
-                Vector3 newPoint = Random.insideUnitSphere * 50; //Punto aleatorio alrededor nuestro multiplicado por una distancia (radio)
-                NavMeshHit hit;
-                NavMesh.SamplePosition(newPoint, out hit, 50, 1); //1 -> Walkable
-                destination = hit.position;
-            }
-
+            // Ruta secuencial: recorre los waypoints en orden
             else
             {
-                if (index < _route.childCount)
-                    index++;
-
-                else
-                    index = 0;
-
+                index = (index + 1) % _route.childCount;
                 destination = _route.GetChild(index).position;
             }
 
